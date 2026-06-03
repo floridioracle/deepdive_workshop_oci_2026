@@ -13,7 +13,8 @@ Este stack con AIDP debe desplegarse en OCI Chicago:
 
 - Nombre de region: `US Midwest (Chicago)`
 - Identificador de region: `us-chicago-1`
-
+- sa-bogota-1
+- sa-saopaulo-1
 
 ## Despliegue desde OCI Console / Resource Manager
 
