@@ -1,0 +1,12 @@
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/vcs.xml
+.idea/modules.xml
+.idea/.gitignore
+.idea/deepdive_workshop_oci_2026.iml
+*.idea/
+
+# Local credentials and temporary key material
+tools/oraclelabs
+tools/keyTemp/
+*.pem
+

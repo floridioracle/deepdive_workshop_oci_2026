@@ -1,0 +1,8 @@
+langchain==0.3.19
+langchain-community==0.3.18
+langchain-core==0.3.39
+langchain-text-splitters==0.3.6
+langsmith==0.3.45
+tavily-python==0.7.17
+oci
+ipywidgets
