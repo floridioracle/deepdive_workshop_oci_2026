@@ -32,7 +32,7 @@ Trabajaremos con dos productos estrella del stack de IA de Oracle:
 
 ---
 
-## 🎯 Objetivos de aprendizaje
+## 🎯 Objetivos de aprendizaje*]
 
 Al finalizar, serás capaz de:
 
@@ -41,9 +41,7 @@ Al finalizar, serás capaz de:
 - Organizar información siguiendo la arquitectura medallón (**Bronze → Silver → Gold**).
 - Ejecutar notebooks de laboratorio en un **cluster de AIDP**.
 - Desplegar **AI Database Private Agent Factory** desde OCI Marketplace.
-- Construir un **Data Analysis Agent** para Text‑to‑SQL sin escribir código.
-- Diseñar un flujo conversacional en **Agent Builder** conectado a una base de datos real (Si llegamos)
-
+- Diseñar un flujo conversacional en **Agent Builder** conectado a una base de datos real 
 ---
 
 ## 🗺️ Arquitectura de la solución
@@ -107,6 +105,7 @@ Al finalizar, serás capaz de:
 
 ### 🛠️ Soporte
 - [Troubleshooting de notebooks y catálogo externo](./TROUBLESHOOTING.md)
+- [Stack Terraform para Autonomous AI Database + AIDP](./README_stack.md)
 
 ---
 
@@ -147,6 +146,10 @@ Haz clic en **Create Compartment** y espera a que el estado aparezca como **Acti
   ![compartment-demo.png](images/compartment-demo.png)
   </details>
 
+---
+
+
+> 🧰 **Opción Terraform:** vamos a crear la **Autonomous AI Database 26ai** y la instancia de **AI Data Platform**, con el stack Terraform incluido en el repositorio. Revisa el paso a paso en [README_stack.md](./README_stack.md). Dejamos el paso a paso para el conocimiento
 ---
 
 ### 1.2 Creación de la Autonomous AI Database
@@ -631,7 +634,6 @@ Con eso tendrás todos los notebooks necesarios para realizar las sesiones prác
 <img src="./images/ntbk2_todo.jpg" alt="Cluster active"/>
 
 
-### 2.6 Importación de librerías
 
 Una vez el cluster se encuentre creado, podemos seleccionar el cluster en el panel izquierdo de la plataforma AIDP y hacer click en lel panel Library.
 
@@ -641,7 +643,7 @@ Una vez el cluster se encuentre creado, podemos seleccionar el cluster en el pan
 <p align="center">
 <img src="./images/image 44.png" alt="Cluster active"/>
 
-
+### NO HACE FALTA
 Allí podemos cargar el archivo requirements.txt que se encuentra en
 
 - [Descargar `requirements.txt`](./requirements.txt)
@@ -657,7 +659,7 @@ Cuando el estado sea installed, tendrás un entorno completamente configurado y 
 Para ejecutar cada celda del notebook, haz clic en el botón **Play** o usa el atajo **Ctrl + Enter**.
 </p>
 
-> ✅ **Checkpoint Módulo 2** — Con los datos cargados, los tres catálogos creados y el cluster activo, el entorno está listo para las sesiones de notebooks y para comenzar con Agent Factory.
+> ✅ **Checkpoint Módulo 2** — Con los datos cargados, los tres catálogos creados y el cluster activo, el entorno está listo para las sesiones de notebooks 
 
 ---
 
