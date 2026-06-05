@@ -32,11 +32,11 @@ Trabajaremos con dos productos estrella del stack de IA de Oracle:
 
 ---
 
-## 🎯 Objetivos de aprendizaje*]
+## 🎯 Objetivos de aprendizaje
 
 Al finalizar, serás capaz de:
 
-- Aprovisionar una **Autonomous AI Database 26ai** y una instancia de **AI Data Platform** desde cero.
+- Aprovisionar una **Autonomous AI Database 26ai** y una instancia de **AI Data Platform** usando Terraform.
 - Ingestar datos en Autonomous mediante `DBMS_CLOUD` y en AIDP mediante catálogos externos y estándar.
 - Organizar información siguiendo la arquitectura medallón (**Bronze → Silver → Gold**).
 - Ejecutar notebooks de laboratorio en un **cluster de AIDP**.
@@ -84,9 +84,8 @@ Al finalizar, serás capaz de:
 
 ### 🧱 Módulo 1 · Preparación del entorno
 - [1.1 Creación del compartment `demo`](#11-creación-del-compartment-demo)
-- [1.2 Creación de la Autonomous AI Database](#12-creación-de-la-autonomous-ai-database)
-- [1.3 Descarga de la Wallet](#13-descarga-de-la-wallet)
-- [1.4 Creación de la AI Data Platform](#14-creación-de-la-ai-data-platform)
+- [1.2 Despliegue de Autonomous AI Database + AIDP con Terraform](#12-despliegue-de-autonomous-ai-database--aidp-con-terraform)
+- [1.3 Wallet generada por Terraform](#13-wallet-generada-por-terraform)
 
 ### 📥 Módulo 2 · Ingesta y catalogación de datos
 - [2.1 Ingesta en Autonomous AI Database](#21-ingesta-en-autonomous-ai-database)
@@ -149,88 +148,51 @@ Haz clic en **Create Compartment** y espera a que el estado aparezca como **Acti
 ---
 
 
-> 🧰 **Opción Terraform:** vamos a crear la **Autonomous AI Database 26ai** y la instancia de **AI Data Platform**, con el stack Terraform incluido en el repositorio. Revisa el paso a paso en [README_stack.md](./README_stack.md). Dejamos el paso a paso para el conocimiento
----
+### 1.2 Despliegue de Autonomous AI Database + AIDP con Terraform
 
-### 1.2 Creación de la Autonomous AI Database
+En este workshop, la **Autonomous AI Database 26ai** y la instancia de **AI Data Platform** se crean con el stack Terraform incluido en el repositorio. No es necesario crear estos servicios manualmente desde la consola.
 
-Abre el menú de hamburguesa (parte superior izquierda) para acceder a los servicios de OCI. Busca **Oracle AI Database → Autonomous AI Database** y abre el servicio.
+Sigue el paso a paso del stack:
 
-<p align="center"><img width="900" src="./images/15e75f59-ab1a-4395-afc0-f8c75fcd5b44" alt="Menú OCI - Autonomous AI Database"/></p>
+- [README_stack.md](./README_stack.md)
 
-Verifica que estés en el **compartment** correcto y haz clic en **Create Autonomous AI Database**.
+El stack crea:
 
-<p align="center"><img width="900" src="./images/d0134d24-bce9-4a46-b195-7db8700381b6" alt="Crear Autonomous"/></p>
-<p align="center"><img width="900" src="./images/59a45429-a30c-40ce-8695-a4af0f58eea6" alt="Formulario de creación"/></p>
+- Autonomous AI Database 26ai.
+- AI Data Platform.
+- Política IAM requerida por AIDP, si `create_aidp_policy = true`.
+- Wallet de Autonomous como output `wallet_base64`.
+- Archivo `.zip` de Wallet si `write_wallet_file = true`.
 
-Completa los campos de configuración:
+Al finalizar el `Apply`, valida que los outputs principales estén disponibles:
 
-| Campo | Valor |
-|---|---|
-| **Display name** | `DeepDiveAutonomousDatabase` |
-| **Database name** | `DeepDiveAutonomousDatabase` |
-| **Workload type** | `Transaction Processing` |
-| **Database version** | `26ai` ⚠️ *Muchas capacidades de IA requieren 23ai o superior* |
-| **ECPU Count** | `4` *(recomendado > 2)* |
-| **Storage** | `256 GB` |
-| **Access type** | `Secure Access from Everywhere` |
-
-<p align="center"><img width="700" src="./images/a5ba0ac6-e375-4684-9aba-53884ac32d35" alt="Configuración"/></p>
-
-En la sección de **credenciales** crea una contraseña para el usuario `ADMIN`:
-
-> 🔐 **Requisitos de contraseña**
-> - Entre 12 y 30 caracteres
-> - Al menos una mayúscula y un número
-> - Sin comillas simples ni dobles, sin contener el nombre de usuario
-
-<p align="center"><img width="900" src="./images/9c9867c2-aa13-47fe-ae44-3a8a37511a40" alt="Credenciales"/></p>
-
-Deja el resto de la configuración por defecto. La base pasará a estado **Provisioning**.
-
-<p align="center"><img width="900" src="./images/0f304048-0c35-408a-adf0-823242352de9" alt="Provisioning"/></p>
-<p align="center"><img width="900" src="./images/0df54478-57a7-4591-bc1c-fc7a4896d838" alt="Available"/></p>
+```bash
+terraform output autonomous_database_id
+terraform output aidp_id
+terraform output -raw admin_password
+terraform output -raw wallet_base64
+```
 
 ---
 
-### 1.3 Descarga de la Wallet
+### 1.3 Wallet generada por Terraform
 
-Dentro de la página de la base, junto a **Database Actions**, encontrarás el botón de **Database Connection**.
+Usa la Wallet generada por el stack Terraform para los pasos posteriores de AIDP y Agent Factory.
 
-<p align="center"><img src="./images/image 6.png" alt="Database Connection"/></p>
+Si ejecutas Terraform localmente con `write_wallet_file = true`, usa el archivo indicado por el output:
 
-Desde ahí descarga la **Wallet**.
+```bash
+terraform output wallet_file_path
+```
 
-<p align="center"><img width="800" src="./images/image 7.png" alt="Descargar Wallet"/></p>
+Si solo tienes el output `wallet_base64`, puedes decodificarlo:
 
-> 🔑 Ingresa una contraseña para proteger la Wallet (puede ser la misma que la de ADMIN). Se descargará un archivo `.zip` que usaremos más adelante.
+```bash
+terraform output -raw wallet_base64 > wallet.b64
+base64 -d wallet.b64 > wallet.zip
+```
 
----
-
-### 1.4 Creación de la AI Data Platform
-
-Abre el menú lateral y navega a **Analytics & AI → AI Data Platform Workbench**.
-
-<p align="center"><img width="900" src="./images/4a8a4382-9635-441b-b0f8-95ca3b210718" alt="AIDP menu"/></p>
-
-Confirma el compartment y haz clic en **Create**.
-
-<p align="center"><img width="900" src="./images/8d6231f0-e820-4efa-b269-2ca27855da3a" alt="Create AIDP"/></p>
-
-Completa:
-
-| Campo | Valor |
-|---|---|
-| **AIDP name** | `DeepDiveAIDP` |
-| **Workspace name** | `DeepDiveWorkspace` |
-| **Security policy** | `Standard` |
-
-<p align="center"><img width="900" src="./images/db01d12a-662e-4b65-9446-9c2a7f60f388" alt="AIDP form"/></p>
-<p align="center"><img width="900" src="./images/e11fe0a0-6f83-4f4c-b8de-1a45506f9f9f" alt="AIDP confirm"/></p>
-
-Presiona **Add** y luego **Create**. Serás redirigido al listado con tu AIDP en estado **Creating**.
-
-<p align="center"><img width="900" src="./images/ece11ab6-2d0d-46e8-a58c-fc60d5402375" alt="AIDP creating"/></p>
+La contraseña de la Wallet es la configurada en `wallet_password`; si no se configuró, el stack usa `admin_password`.
 
 ---
 
@@ -523,7 +485,7 @@ Completa el formulario:
 | **Catalog type** | `External catalog` |
 | **External source type** | `Oracle Autonomous AI Transaction Processing` |
 | **External source method** | `Wallet` |
-| **Selected file** | `Wallet_ABC.zip` *(la que descargaste en 1.2)* |
+| **Selected file** | `wallet.zip` *(la Wallet generada por Terraform en el paso 1.3)* |
 | **Service** | `deepdiveautonomousdatabase_high` |
 | **Wallet password** | *la contraseña de la Wallet* |
 | **Username** | `ADMIN` |
@@ -801,7 +763,7 @@ Abre el link entregado por el stack. Verás la página de **registro inicial**:
 
 <p align="center"><img src="./images/image 25.png" alt="Registro"/></p>
 
-Registra tu cuenta y continúa a la **conexión con la base de datos**, cargando la Wallet que descargaste en el paso **1.2**.
+Registra tu cuenta y continúa a la **conexión con la base de datos**, cargando la Wallet generada por Terraform en el paso **1.3**.
 
 <p align="center"><img src="./images/image 26.png" alt="Wallet"/></p>
 
@@ -1012,7 +974,7 @@ En el panel izquierdo selecciona **Data Source** y crea uno de tipo **Database**
 |---|---|
 | **Name** | *Nombre descriptivo de la conexión* |
 | **Description** | *Propósito de la fuente* |
-| **Connection type** | *Carga la Wallet descargada en 1.2* |
+| **Connection type** | *Carga la Wallet generada por Terraform en 1.3* |
 | **Username** | `ADMIN` |
 | **Password** | *la contraseña de tu Autonomous* |
 
@@ -1175,7 +1137,7 @@ En el panel izquierdo selecciona **Data Source** y crea uno de tipo **Database**
 |---|---|
 | **Name** | *Nombre descriptivo de la conexión* |
 | **Description** | *Propósito de la fuente* |
-| **Connection type** | *Carga la Wallet descargada en 1.2* |
+| **Connection type** | *Carga la Wallet generada por Terraform en 1.3* |
 | **Username** | `ADMIN` |
 | **Password** | *la contraseña de tu Autonomous* |
 
