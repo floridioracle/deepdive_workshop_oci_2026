@@ -36,7 +36,7 @@ Trabajaremos con dos productos estrella del stack de IA de Oracle:
 
 Al finalizar, serás capaz de:
 
-- Aprovisionar una **Autonomous AI Database 26ai** y una instancia de **AI Data Platform** usando Terraform.
+- Aprovisionar una **Autonomous AI Database 26ai** y una instancia de **AI Data Platform** desde OCI Console / Resource Manager.
 - Ingestar datos en Autonomous mediante `DBMS_CLOUD` y en AIDP mediante catálogos externos y estándar.
 - Organizar información siguiendo la arquitectura medallón (**Bronze → Silver → Gold**).
 - Ejecutar notebooks de laboratorio en un **cluster de AIDP**.
@@ -84,8 +84,7 @@ Al finalizar, serás capaz de:
 
 ### 🧱 Módulo 1 · Preparación del entorno
 - [1.1 Creación del compartment `demo`](#11-creación-del-compartment-demo)
-- [1.2 Despliegue de Autonomous AI Database + AIDP con Terraform](#12-despliegue-de-autonomous-ai-database--aidp-con-terraform)
-- [1.3 Wallet generada por Terraform](#13-wallet-generada-por-terraform)
+- [1.2 Despliegue de Autonomous AI Database + AIDP con Resource Manager](#12-despliegue-de-autonomous-ai-database--aidp-con-resource-manager)
 
 ### 📥 Módulo 2 · Ingesta y catalogación de datos
 - [2.1 Ingesta en Autonomous AI Database](#21-ingesta-en-autonomous-ai-database)
@@ -104,7 +103,6 @@ Al finalizar, serás capaz de:
 
 ### 🛠️ Soporte
 - [Troubleshooting de notebooks y catálogo externo](./TROUBLESHOOTING.md)
-- [Stack Terraform para Autonomous AI Database + AIDP](./README_stack.md)
 
 ---
 
@@ -148,51 +146,115 @@ Haz clic en **Create Compartment** y espera a que el estado aparezca como **Acti
 ---
 
 
-### 1.2 Despliegue de Autonomous AI Database + AIDP con Terraform
+### 1.2 Despliegue de Autonomous AI Database + AIDP con Resource Manager
 
-En este workshop, la **Autonomous AI Database 26ai** y la instancia de **AI Data Platform** se crean con el stack Terraform incluido en el repositorio. No es necesario crear estos servicios manualmente desde la consola.
-
-Sigue el paso a paso del stack:
-
-- [README_stack.md](./README_stack.md)
+En este workshop, la **Autonomous AI Database 26ai** y la instancia de **AI Data Platform** se despliegan con el stack Terraform desde **OCI Console / Resource Manager**. No se crean manualmente desde los formularios de cada servicio.
 
 El stack crea:
 
 - Autonomous AI Database 26ai.
 - AI Data Platform.
-- Política IAM requerida por AIDP, si `create_aidp_policy = true`.
+- Policy IAM requerida para que AIDP opere en el compartment indicado.
 - Wallet de Autonomous como output `wallet_base64`.
-- Archivo `.zip` de Wallet si `write_wallet_file = true`.
+- Archivo `.zip` de Wallet cuando `write_wallet_file = true`.
 
-Al finalizar el `Apply`, valida que los outputs principales estén disponibles:
+#### Región del workshop
 
-```bash
-terraform output autonomous_database_id
-terraform output aidp_id
-terraform output -raw admin_password
-terraform output -raw wallet_base64
+Usa la región validada para el workshop:
+
+| Campo | Valor |
+|---|---|
+| **Region name** | `US Midwest (Chicago)` |
+| **Region identifier** | `us-chicago-1` |
+
+> Mantén en la misma región la Autonomous AI Database, AIDP, Agent Factory y OCI Generative AI.
+
+#### Crear el stack en Resource Manager
+
+En OCI Console:
+
+1. Ve a **Developer Services → Resource Manager → Stacks**.
+2. Haz clic en **Create stack**.
+3. En **Stack configuration**, selecciona:
+   - **My configuration**
+   - **Upload zip file**
+4. Sube el archivo del stack incluido en este repositorio:
+   - [`deepdive-oci-stack.zip`](./deepdive-oci-stack.zip)
+5. Confirma el compartment `demo`.
+6. Continúa a la configuración de variables.
+
+#### Variables mínimas
+
+Configura estas variables en el formulario del stack:
+
+```hcl
+compartment_id = "ocid1.compartment.oc1..your_compartment_ocid"
+tenancy_ocid   = "ocid1.tenancy.oc1..your_tenancy_ocid"
+region         = "us-chicago-1"
+
+create_aidp        = true
+create_aidp_policy = true
 ```
 
----
+Si el stack se crea directamente en Chicago, `region` puede quedar vacío o `null`, pero para evitar dudas en el workshop se recomienda cargar explícitamente:
 
-### 1.3 Wallet generada por Terraform
-
-Usa la Wallet generada por el stack Terraform para los pasos posteriores de AIDP y Agent Factory.
-
-Si ejecutas Terraform localmente con `write_wallet_file = true`, usa el archivo indicado por el output:
-
-```bash
-terraform output wallet_file_path
+```hcl
+region = "us-chicago-1"
 ```
 
-Si solo tienes el output `wallet_base64`, puedes decodificarlo:
+La Autonomous queda fija en el código Terraform con estos parámetros:
 
-```bash
-terraform output -raw wallet_base64 > wallet.b64
-base64 -d wallet.b64 > wallet.zip
+| Parámetro | Valor |
+|---|---|
+| `compute_model` | `ECPU` |
+| `compute_count` | `2` |
+| `data_storage_size_in_gb` | `100` |
+| `license_model` | `LICENSE_INCLUDED` |
+| `db_workload` | `OLTP` |
+
+#### Ejecutar Plan y Apply
+
+Después de crear el stack:
+
+1. Ejecuta **Plan**.
+2. Revisa que el plan incluya:
+   - Autonomous Database.
+   - AI Data Platform.
+   - IAM policy.
+   - Wallet.
+3. Ejecuta **Apply**.
+4. Espera a que el job termine en estado exitoso.
+
+#### Policy IAM creada por el stack
+
+Si `create_aidp = true` y `create_aidp_policy = true`, el stack crea una policy IAM en el root tenancy usando `tenancy_ocid`.
+
+Nombre por defecto:
+
+```hcl
+aidp_policy_name = "DeepDiveAIDPServicePolicy"
 ```
 
-La contraseña de la Wallet es la configurada en `wallet_password`; si no se configuró, el stack usa `admin_password`.
+La identidad que ejecuta Resource Manager debe tener permiso para crear esa policy en el root tenancy. Si la policy ya existe, usa:
+
+```hcl
+create_aidp_policy = false
+```
+
+#### Outputs del stack
+
+Al finalizar el **Apply**, revisa los outputs del job:
+
+- `autonomous_database_id`
+- `autonomous_database_state`
+- `aidp_id`
+- `aidp_state`
+- `aidp_policy_id`
+- `wallet_base64` (sensitive)
+- `admin_password` (sensitive, default: `Workshop@123`)
+- `wallet_file_path` (cuando `write_wallet_file = true`)
+
+Usa la Wallet generada por el stack para los pasos posteriores de AIDP y Agent Factory. La contraseña de la Wallet es `wallet_password`; si no se configuró, el stack usa `admin_password`.
 
 ---
 
@@ -485,7 +547,7 @@ Completa el formulario:
 | **Catalog type** | `External catalog` |
 | **External source type** | `Oracle Autonomous AI Transaction Processing` |
 | **External source method** | `Wallet` |
-| **Selected file** | `wallet.zip` *(la Wallet generada por Terraform en el paso 1.3)* |
+| **Selected file** | `wallet.zip` *(la Wallet generada por Resource Manager en el paso 1.2)* |
 | **Service** | `deepdiveautonomousdatabase_high` |
 | **Wallet password** | *la contraseña de la Wallet* |
 | **Username** | `ADMIN` |
@@ -763,7 +825,7 @@ Abre el link entregado por el stack. Verás la página de **registro inicial**:
 
 <p align="center"><img src="./images/image 25.png" alt="Registro"/></p>
 
-Registra tu cuenta y continúa a la **conexión con la base de datos**, cargando la Wallet generada por Terraform en el paso **1.3**.
+Registra tu cuenta y continúa a la **conexión con la base de datos**, cargando la Wallet generada por Resource Manager en el paso **1.2**.
 
 <p align="center"><img src="./images/image 26.png" alt="Wallet"/></p>
 
@@ -974,7 +1036,7 @@ En el panel izquierdo selecciona **Data Source** y crea uno de tipo **Database**
 |---|---|
 | **Name** | *Nombre descriptivo de la conexión* |
 | **Description** | *Propósito de la fuente* |
-| **Connection type** | *Carga la Wallet generada por Terraform en 1.3* |
+| **Connection type** | *Carga la Wallet generada por Resource Manager en 1.2* |
 | **Username** | `ADMIN` |
 | **Password** | *la contraseña de tu Autonomous* |
 
@@ -1137,7 +1199,7 @@ En el panel izquierdo selecciona **Data Source** y crea uno de tipo **Database**
 |---|---|
 | **Name** | *Nombre descriptivo de la conexión* |
 | **Description** | *Propósito de la fuente* |
-| **Connection type** | *Carga la Wallet generada por Terraform en 1.3* |
+| **Connection type** | *Carga la Wallet generada por Resource Manager en 1.2* |
 | **Username** | `ADMIN` |
 | **Password** | *la contraseña de tu Autonomous* |
 

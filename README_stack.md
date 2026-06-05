@@ -53,27 +53,6 @@ Despues de crear el stack:
 2. Revisar que el plan incluya Autonomous Database, AIDP, IAM policy y wallet.
 3. Ejecutar `Apply`.
 
-## Despliegue local con Terraform
-
-Usar `terraform.tfvars` con Chicago:
-
-```hcl
-compartment_id = "ocid1.compartment.oc1..your_compartment_ocid"
-tenancy_ocid   = "ocid1.tenancy.oc1..your_tenancy_ocid"
-region         = "us-chicago-1"
-
-create_aidp        = true
-create_aidp_policy = true
-```
-
-Ejecutar desde la carpeta donde estan los `.tf`:
-
-```bash
-terraform init
-terraform plan -var-file=terraform.tfvars
-terraform apply -var-file=terraform.tfvars
-```
-
 ## Recursos principales
 
 La base Autonomous queda fija con estos parametros en el codigo:
