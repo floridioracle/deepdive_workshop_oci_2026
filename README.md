@@ -101,10 +101,19 @@ Al finalizar, serás capaz de:
 - [3.5 Lab · Data Analysis Agent (Text‑to‑SQL)](#35-lab--data-analysis-agent-text-to-sql)
 - [3.6 Lab · Agent Builder — Narrador futbolístico](#36-lab--agent-builder--narrador-futbolístico)
 
+### 💬 Módulo 4 · Ask Oracle Chatbot con Select AI y APEX
+- [4.1 Crear workspace APEX](#41-crear-workspace-apex)
+- [4.2 Importar la aplicación Ask Oracle](#42-importar-la-aplicación-ask-oracle)
+- [4.3 Configurar perfil Select AI](#43-configurar-perfil-select-ai)
+- [4.4 Probar consultas en lenguaje natural](#44-probar-consultas-en-lenguaje-natural)
+
 ### 🛠️ Soporte
 - [Troubleshooting de notebooks y catálogo externo](./TROUBLESHOOTING.md)
 
 ---
+
+<details>
+<summary><strong>🧱 Módulo 1 · Preparación del entorno</strong></summary>
 
 <div align="center">
 
@@ -258,6 +267,11 @@ Usa la Wallet generada por el stack para los pasos posteriores de AIDP y Agent F
 
 ---
 
+</details>
+
+<details>
+<summary><strong>📥 Módulo 2 · Ingesta y catalogación de datos</strong></summary>
+
 <div align="center">
 
 # 📥 Módulo 2 · Ingesta y catalogación de datos
@@ -290,7 +304,7 @@ Este script deja todo listo en una ejecución:
 - Crea el usuario `ORACLELABS`.
 - Crea y carga `ORACLELABS.BRONZE_WC_MATCHES`.
 - Refresca `ADMIN.BRONZE_WC_MATCHES` para compatibilidad.
-- Habilita ORDS/REST para el esquema `ORACLELABS`.
+- Habilita ORDS/REST para el esquema `ORACLELABS`. Luego configurar la clave en Database actions -> Database Users
 
 <details>
   <summary> 👇👇Ver SQL (clic para desplegar)👇👇</summary>
@@ -667,15 +681,6 @@ Una vez el cluster se encuentre creado, podemos seleccionar el cluster en el pan
 <p align="center">
 <img src="./images/image 44.png" alt="Cluster active"/>
 
-### NO HACE FALTA
-Allí podemos cargar el archivo requirements.txt que se encuentra en
-
-- [Descargar `requirements.txt`](./requirements.txt)
-
-Una vez se haya adjuntado el archivo, se iniciará un proceso de instalación de librerías en dos estados, Resolving e Installed.
-
-<p align="center">
-<img src="./images/image 45.png" alt="Cluster active"/>
 
 
 Cuando el estado sea installed, tendrás un entorno completamente configurado y puedes seguir las instrucciones de cada notebook junto con el instructor para ejecutar los laboratorios.
@@ -686,6 +691,11 @@ Para ejecutar cada celda del notebook, haz clic en el botón **Play** o usa el a
 > ✅ **Checkpoint Módulo 2** — Con los datos cargados, los tres catálogos creados y el cluster activo, el entorno está listo para las sesiones de notebooks 
 
 ---
+
+</details>
+
+<details>
+<summary><strong>🤖 Módulo 3 · AI Database Private Agent Factory</strong></summary>
 
 <div align="center">
 
@@ -1368,6 +1378,178 @@ El agente consultará la base de datos y devolverá la respuesta en formato narr
 
 ---
 
+</details>
+
+<details>
+<summary><strong>💬 Módulo 4 · Ask Oracle Chatbot con Select AI y APEX</strong></summary>
+
+<div align="center">
+
+# 💬 Módulo 4 · Ask Oracle Chatbot con Select AI y APEX
+
+*Instalamos una aplicación APEX lista para usar sobre Autonomous AI Database 26ai, conectada a Select AI, para consultar datos con lenguaje natural.*
+
+</div>
+
+---
+
+Ask Oracle es una aplicación de ejemplo de **Oracle APEX** que ofrece una interfaz conversacional para interactuar con **Select AI** sobre Autonomous AI Database. Permite consultar datos con **NL2SQL**, usar perfiles con **RAG**, conversar con agentes, revisar el SQL generado, crear gráficos y mantener conversaciones.
+
+En este workshop la usaremos como una demo corta sobre los datos ya cargados en Autonomous, especialmente la tabla:
+
+```sql
+ORACLELABS.BRONZE_WC_MATCHES
+```
+
+El patrón es el mismo que se usaría en una plataforma reutilizable de inteligencia documental o de casos: Autonomous Database 26ai como capa de datos, APEX como interfaz, Select AI como motor NL2SQL/RAG y, en escenarios productivos, extensión hacia documentos, Object Storage, Queue y OCI Functions.
+
+### 4.1 Crear workspace APEX
+
+Abre tu instancia de **Autonomous AI Database** y entra a **Database Actions**. Desde allí abre **APEX**.
+
+Si todavía no existe un workspace APEX, la URL abre **Administration Services**. Esta pantalla se accede como usuario `ADMIN`; desde allí se crea el workspace que usará Ask Oracle.
+
+En **Administration Services**, crea el workspace:
+
+1. En la barra superior o en el panel derecho, abre **Manage Workspaces**.
+2. Haz clic en **Create Workspace**.
+3. Selecciona **Existing Schema**.
+4. Usa el schema `ORACLELABS`.
+5. Crea el usuario administrador del workspace.
+6. Finaliza el asistente y vuelve a abrir APEX para iniciar sesión en el workspace.
+
+Usa estos valores:
+
+| Campo | Valor |
+|---|---|
+| **Database User** | `ORACLELABS` |
+| **Workspace Name** | `ASK_ORACLE` |
+| **Workspace Username** | `ASK_ORACLE_ADMIN` |
+| **Workspace Password** | *contraseña fuerte del laboratorio* |
+
+> ✅ En este workshop usamos `ORACLELABS` porque el script de ingesta crea y carga allí `BRONZE_WC_MATCHES`. Si estás usando otro schema, selecciona el schema dueño de las tablas o concede permisos `SELECT` al schema usado por APEX.
+
+Cuando el workspace ya existe, la URL de APEX abre la pantalla de login del workspace. Inicia sesión con:
+
+| Campo | Valor |
+|---|---|
+| **Workspace** | `ASK_ORACLE` |
+| **Username** | `ASK_ORACLE_ADMIN` |
+| **Password** | *la contraseña definida al crear el workspace* |
+
+Antes de usar Ask Oracle, prepara los privilegios mínimos y el perfil Select AI con el script del workshop:
+
+Antes de usar Select AI desde Autonomous, confirma que existen estas policies IAM a nivel compartment para el dynamic group `DeepDiveAdbResourcePrincipal`:
+
+```text
+Allow dynamic-group DeepDiveAdbResourcePrincipal to read buckets in compartment id ocid1.compartment.oc1..aaaaaaaaokqrjqnlqe7drotstyalyn55h2v72cftcjssj5wms5p5eiykgoya
+Allow dynamic-group DeepDiveAdbResourcePrincipal to manage objects in compartment id ocid1.compartment.oc1..aaaaaaaaokqrjqnlqe7drotstyalyn55h2v72cftcjssj5wms5p5eiykgoya
+Allow dynamic-group DeepDiveAdbResourcePrincipal to read objectstorage-namespaces in compartment id ocid1.compartment.oc1..aaaaaaaaokqrjqnlqe7drotstyalyn55h2v72cftcjssj5wms5p5eiykgoya
+Allow dynamic-group DeepDiveAdbResourcePrincipal to use generative-ai-family in compartment id ocid1.compartment.oc1..aaaaaaaaokqrjqnlqe7drotstyalyn55h2v72cftcjssj5wms5p5eiykgoya
+Allow dynamic-group DeepDiveAdbResourcePrincipal to use ai-service-document-family in compartment id ocid1.compartment.oc1..aaaaaaaaokqrjqnlqe7drotstyalyn55h2v72cftcjssj5wms5p5eiykgoya
+Allow dynamic-group DeepDiveAdbResourcePrincipal to read secret-family in compartment id ocid1.compartment.oc1..aaaaaaaaokqrjqnlqe7drotstyalyn55h2v72cftcjssj5wms5p5eiykgoya
+```
+
+- [`tools/ask_oracle_select_ai_setup.sql`](./tools/ask_oracle_select_ai_setup.sql)
+
+El script está dividido en secciones:
+
+| Sección | Usuario | Propósito |
+|---|---|---|
+| **A** | `ADMIN` | Otorga `DBMS_CLOUD_AI`, `DBMS_CLOUD_AI_AGENT`, `DBMS_CLOUD_PIPELINE`, `DBMS_VECTOR`, `DBMS_CLOUD`, `CREATE ANY INDEX` y habilita resource principal para `ORACLELABS` |
+| **B** | `ORACLELABS` | Crea el perfil `DEEPDIVE_WC_NL2SQL` sobre `ORACLELABS.BRONZE_WC_MATCHES`, incluyendo `embedding_model` para el índice vectorial |
+| **C** | `ORACLELABS` | Crea el índice vectorial combinado `DEEPDIVE_WC_COMBINED_IDX` desde documentos en Object Storage |
+| **D** | `ORACLELABS` | Crea el perfil RAG `DEEPDIVE_WC_RAG` sobre el índice vectorial |
+| **E** | `ORACLELABS` | Configura preferencias iniciales de Ask Oracle para el usuario APEX |
+
+Edita antes de ejecutar:
+
+```sql
+define OCI_COMPARTMENT_ID = 'ocid1.compartment.oc1..REPLACE_ME'
+define OCI_GENAI_REGION = 'us-chicago-1'
+define OCI_GENAI_MODEL = 'cohere.command-r-08-2024'
+define OCI_GENAI_EMBED_MODEL = 'cohere.embed-multilingual-v3.0'
+```
+
+Si también vas a probar RAG, sube los documentos o textos al bucket elegido y completa:
+crear el bucket demo rag y subir pdf deepdive_workshop_oci_2026-1\tools\FWC26_regulations_ES.pdf
+
+```sql
+define OBJECT_STORAGE_NAMESPACE = 'REPLACE_NAMESPACE'
+define SOURCE_BUCKET = 'REPLACE_BUCKET'
+define COMBINED_RAG_PREFIX = 'ask-oracle-rag/combined'
+```
+
+
+Si necesitas validar que los datos existen antes de continuar, ejecuta:
+
+```sql
+SELECT COUNT(*) AS total_matches
+FROM ORACLELABS.BRONZE_WC_MATCHES;
+```
+
+### 4.2 Importar la aplicación Ask Oracle
+
+Descarga la aplicación desde el repositorio oficial:
+
+- [Ask Oracle Chatbot APEX application](https://github.com/oracle-devrel/oracle-autonomous-database-samples/blob/main/apex/Ask-Oracle/README.md)
+
+Para este workshop también queda una copia local de la aplicación en:
+
+- [`tools/ADB-AskOracle-Chatbot-2026-03-04.sql`](./tools/ADB-AskOracle-Chatbot-2026-03-04.sql)
+
+Luego entra al workspace `ASK_ORACLE` con el usuario `ASK_ORACLE_ADMIN`.
+
+En APEX:
+
+1. Abre **App Builder**.
+2. Haz clic en **Import**.
+3. Selecciona `tools/ADB-AskOracle-Chatbot-2026-03-04.sql`.
+4. Avanza por el wizard de importación.
+5. Instala los **supporting objects** cuando APEX lo solicite.
+6. Ejecuta la aplicación.
+
+Al finalizar tendrás una interfaz tipo chatbot para interactuar con Select AI desde APEX.
+
+### 4.3 Configurar perfil Select AI
+
+Dentro de Ask Oracle, abre **Settings** desde el menú de usuario.
+
+Configura el perfil o agente que usarás durante la demo:
+
+| Opción | Uso recomendado en el workshop |
+|---|---|
+| **AI Profile** | Selecciona `DEEPDIVE_WC_NL2SQL` |
+| **Database / NL2SQL** | Actívalo para consultar tablas de Autonomous |
+| **RAG Profile** | Selecciona `DEEPDIVE_WC_RAG` si ejecutaste las secciones C y D |
+| **Agent Team** | Opcional, si tienes agentes Select AI configurados |
+
+Para esta demo, enfócate en el perfil `DEEPDIVE_WC_NL2SQL` contra los datos de `ORACLELABS.BRONZE_WC_MATCHES`. Las capacidades de RAG y agentes quedan como extensión natural para escenarios con documentos, regulaciones, evidencias o flujos de trabajo más complejos.
+
+### 4.4 Probar consultas en lenguaje natural
+
+Desde el chatbot de Ask Oracle, prueba preguntas como:
+
+> 💬 `¿Cuántos partidos hay en la tabla?`
+>
+> 💬 `¿Qué equipo anotó más goles como local?`
+>
+> 💬 `Genera un gráfico de goles por fase del torneo.`
+
+Cuando Ask Oracle devuelva una respuesta basada en la base de datos, usa **Show SQL** para auditar la consulta generada por Select AI.
+
+> 💡 Si Ask Oracle no encuentra la tabla, confirma que el workspace se creó sobre `ORACLELABS`. Si usaste otro schema, concede permisos desde `ADMIN`:
+>
+> ```sql
+> GRANT SELECT ON ORACLELABS.BRONZE_WC_MATCHES TO <APEX_SCHEMA>;
+> ```
+
+Con esto tienes una experiencia APEX completa para consultar la Autonomous AI Database con lenguaje natural, sin construir una interfaz desde cero.
+
+---
+
+</details>
+
 ## 🏁 ¡Workshop completado!
 
 Has construido, de extremo a extremo, una plataforma de datos moderna con IA generativa sobre Oracle Cloud Infrastructure:
@@ -1378,6 +1560,7 @@ Has construido, de extremo a extremo, una plataforma de datos moderna con IA gen
 - ✅ Factoría privada de agentes desplegada desde Marketplace
 - ✅ Agente **Text‑to‑SQL** sin escribir código
 - ✅ Flujo conversacional con **Agent Builder**, integrado con la base de datos real
+- ✅ Aplicación **Ask Oracle** en APEX para consultar Autonomous con Select AI
 
 ---
 
