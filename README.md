@@ -85,6 +85,8 @@ Al finalizar, serás capaz de:
 ### 🧱 Módulo 1 · Preparación del entorno
 - [1.1 Creación del compartment `demo`](#11-creación-del-compartment-demo)
 - [1.2 Despliegue de Autonomous AI Database + AIDP con Resource Manager](#12-despliegue-de-autonomous-ai-database--aidp-con-resource-manager)
+- [1.3 Acceso a AI Data Platform Workbench](#13-acceso-a-ai-data-platform-workbench)
+- [1.4 Descargar la Wallet de Autonomous Database](#14-descargar-la-wallet-de-autonomous-database)
 
 ### 📥 Módulo 2 · Ingesta y catalogación de datos
 - [2.1 Ingesta en Autonomous AI Database](#21-ingesta-en-autonomous-ai-database)
@@ -201,14 +203,23 @@ compartment_id = "ocid1.compartment.oc1..your_compartment_ocid"
 tenancy_ocid   = "ocid1.tenancy.oc1..your_tenancy_ocid"
 region         = "us-chicago-1"
 
-create_aidp        = true
-create_aidp_policy = true
+wallet_password = "Wallet*2026Demo"
 ```
 
 Si el stack se crea directamente en Chicago, `region` puede quedar vacío o `null`, pero para evitar dudas en el workshop se recomienda cargar explícitamente:
 
 ```hcl
 region = "us-chicago-1"
+```
+
+El stack nuevo ya trae `create_aidp = true` y `create_aidp_policy = true` como valores por defecto. Solo cambia esos toggles si necesitas omitir AIDP o si la policy ya fue creada manualmente:
+
+```hcl
+# Opcional: omitir AIDP si la tenancy o las policies todavía no están listas
+create_aidp = false
+
+# Opcional: usar una policy existente en lugar de crearla desde el stack
+create_aidp_policy = false
 ```
 
 La Autonomous queda fija en el código Terraform con estos parámetros:
@@ -225,14 +236,21 @@ La Autonomous queda fija en el código Terraform con estos parámetros:
 
 Después de crear el stack:
 
-1. Ejecuta **Plan**.
-2. Revisa que el plan incluya:
+1. Revisa las variables.
+2. Ejecuta **Plan**.
+3. Confirma que el plan inicial esperado sea:
+
+   ```text
+   Plan: 5 to add, 0 to change, 0 to destroy.
+   ```
+
+4. Revisa que el plan incluya:
    - Autonomous Database.
    - AI Data Platform.
    - IAM policy.
    - Wallet.
-3. Ejecuta **Apply**.
-4. Espera a que el job termine en estado exitoso.
+5. Ejecuta **Apply** una sola vez.
+6. Espera a que el job termine en estado exitoso.
 
 #### Policy IAM creada por el stack
 
@@ -263,7 +281,113 @@ Al finalizar el **Apply**, revisa los outputs del job:
 - `admin_password` (sensitive, default: `Workshop@123`)
 - `wallet_file_path` (cuando `write_wallet_file = true`)
 
-Usa la Wallet generada por el stack para los pasos posteriores de AIDP y Agent Factory. La contraseña de la Wallet es `wallet_password`; si no se configuró, el stack usa `admin_password`.
+La contraseña de la Wallet es `wallet_password`; si no se configuró, el stack usa `admin_password`.
+
+---
+
+### 1.3 Acceso a AI Data Platform Workbench
+
+Después de que el stack finalice correctamente, abre la instancia de **AI Data Platform** desde OCI Console.
+
+1. Ingresa a la **OCI Console**.
+2. Verifica que estés en la región correcta:
+
+   ```text
+   US Midwest (Chicago)
+   ```
+
+3. En la barra superior de búsqueda, escribe:
+
+   ```text
+   DeepDiveAIDP
+   ```
+
+4. En los resultados, selecciona el recurso **DeepDiveAIDP**.
+5. Valida que el tipo de recurso sea **AI Data Platforms**.
+6. Confirma que el estado sea **Active** y que el recurso pertenezca al compartment `demo`.
+
+Para entrar al Workbench:
+
+1. Haz clic sobre el recurso **DeepDiveAIDP**.
+2. En la página de detalles, selecciona la opción para abrir la plataforma. Puede aparecer como **Open Workbench** o una opción similar para abrir **AI Data Platform Workbench**.
+3. Se abrirá la interfaz de **AI Data Platform Workbench**.
+4. Verifica que en la parte superior aparezca algo similar a:
+
+   ```text
+   AI Data Platform Workbench - DeepDiveAIDP
+   ```
+
+Una vez dentro del Workbench, copia la URL completa desde la barra de direcciones del navegador y guárdala como URL de acceso directo a AIDP para el workshop.
+
+> Para que la URL funcione, el usuario debe estar autenticado en OCI y tener permisos sobre el recurso `DeepDiveAIDP`.
+
+La pantalla principal debería mostrar opciones como:
+
+- Home
+- Master catalog
+- Workspaces
+- Workflow
+- Compute
+- Experiments
+- Credential store
+- Data sharing
+- Roles
+- Settings
+
+Si no aparece el recurso **DeepDiveAIDP**, valida:
+
+- Región: `US Midwest (Chicago)`
+- Compartment: `demo`
+- Resource type: `AI Data Platforms`
+- Estado: `Active`
+
+Si la URL abre un error o no carga, vuelve a entrar desde la OCI Console, abre nuevamente **DeepDiveAIDP**, accede al Workbench y copia una URL nueva.
+
+---
+
+### 1.4 Descargar la Wallet de Autonomous Database
+
+Después de que el stack de Terraform finalice correctamente, descarga la Wallet directamente desde la **Autonomous Database**.
+
+1. Ingresa a la **OCI Console**.
+2. Verifica que estés en la región:
+
+   ```text
+   US Midwest (Chicago)
+   ```
+
+3. En la barra superior de búsqueda, escribe:
+
+   ```text
+   Autonomous Database
+   ```
+
+4. Abre la base de datos creada por el stack:
+
+   ```text
+   DeepDiveAutonomousDatabase
+   ```
+
+5. Verifica que el estado sea **Available** y que esté en el compartment `demo`.
+6. En la página de la Autonomous Database, haz clic en **Database connection** o **DB connection**.
+7. Selecciona **Download wallet**.
+8. Cuando se solicite la contraseña de la Wallet, usa:
+
+   ```text
+   Wallet*2026Demo
+   ```
+
+9. Descarga el archivo `.zip` de la Wallet. El nombre será similar a:
+
+   ```text
+   Wallet_DeepDiveAutonomousDatabase.zip
+   ```
+
+Guarda el archivo `.zip` en una ubicación segura. Esta Wallet se usará en pasos posteriores del workshop para conectarse a la Autonomous Database desde herramientas o servicios que requieran conexión segura.
+
+> No descomprimas ni modifiques el archivo de la Wallet, salvo que una instrucción posterior del workshop lo indique explícitamente.
+
+> La Wallet también es generada por Terraform como output `wallet_base64`, pero para el workshop se recomienda descargarla desde la consola de Autonomous Database porque es el método más simple para los participantes.
 
 ---
 
@@ -552,7 +676,7 @@ Desde el menú lateral, haz clic en **Create**.
 
 <p align="center"><img width="900" src="./images/1f78b5f4-13cc-434e-a379-fc297cdc8ade" alt="Create catalog"/></p>
 
-Completa el formulario:
+Completa el formulario usando la Wallet descargada desde Autonomous Database:
 
 | Campo | Valor |
 |---|---|
@@ -561,13 +685,24 @@ Completa el formulario:
 | **Catalog type** | `External catalog` |
 | **External source type** | `Oracle Autonomous AI Transaction Processing` |
 | **External source method** | `Wallet` |
-| **Selected file** | `wallet.zip` *(la Wallet generada por Resource Manager en el paso 1.2)* |
-| **Service** | `deepdiveautonomousdatabase_high` |
-| **Wallet password** | *la contraseña de la Wallet* |
+| **Selected file** | `Wallet_DeepDiveAutonomousDatabase.zip` o `Wallet_DEEPDIVEAIDB.zip` |
+| **Service** | `deepdiveaidb_high` |
+| **Wallet password** | `Wallet*2026Demo` |
 | **Username** | `ADMIN` |
+| **Password** | `Workshop@123` |
 
 
 Usa **Test Connection** antes de crear. Cuando sea exitosa, confirma.
+
+> **Importante:** `Wallet password` y `Password` no son lo mismo. En `Wallet password` se coloca la contraseña de la Wallet. En `Password` se coloca la contraseña del usuario de base de datos; en este workshop es `Workshop@123`.
+
+El resultado esperado de **Test Connection** es:
+
+```text
+Connection status: Successful
+```
+
+Si la conexión es exitosa, haz clic en **Create**.
 
 <p align="center"><img width="600" src="./images/bf8b6c9a-dd04-41e3-8972-bf173f9f2f06" alt="Test connection"/></p>
 <p align="center"><img width="700" src="./images/40831924-3c9a-449d-a14f-913977ccba9e" alt="Creating"/></p>
