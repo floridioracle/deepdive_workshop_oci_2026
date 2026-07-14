@@ -1169,11 +1169,8 @@ Ya puedes construir tus propios flujos y agentes de IA.
 
 ---
 
-### 3.5 Lab · Data Analysis Agent (Text‑to‑SQL)
 
-> ⚽ **Caso de uso:** construirás un agente de análisis sobre estadísticas de la **Copa Mundial de Fútbol 2022**. El agente entenderá preguntas en lenguaje natural, las traducirá a SQL y devolverá respuestas, tablas y visualizaciones — sin escribir una sola línea de código.
-
-#### Paso 1 · Crear el Data Source
+####  Crear el Data Source
 
 En el panel izquierdo selecciona **Data Source** y crea uno de tipo **Database**:
 
@@ -1191,16 +1188,10 @@ Haz clic en **Test Connection** y luego **Add Database Source**.
 
 > ✅ Al volver al panel **Data Source** verás tu nueva fuente listada.
 
-#### Paso 2 · Crear el Data Analysis Agent
 
-En el menú izquierdo → **Data Analysis Agents → Create Agent**.
+**Selección de la base de datos** — elige la fuente configurada.
 
-<p align="center"><img src="./images/dpaf_image13.png" alt="Agents menu"/></p>
-<p align="center"><img src="./images/dpaf_image14.png" alt="Create agent"/></p>
-
-**2.1 Selección de la base de datos** — elige la fuente configurada.
-
-**2.2 Selección de tablas** — usa la barra de búsqueda para encontrar las tablas (el nombre de cada tabla corresponde al archivo CSV cargado, sin la extensión `.csv`).
+**Selección de tablas** — usa la barra de búsqueda para encontrar las tablas (el nombre de cada tabla corresponde al archivo CSV cargado, sin la extensión `.csv`).
 
 <p align="center"><img src="./images/dpaf_image15.png" alt="Tables 1"/></p>
 <p align="center"><img src="./images/dpaf_image16.png" alt="Tables 2"/></p>
@@ -1213,40 +1204,11 @@ Confirma con **Add New Source**.
 
 <p align="center"><img src="./images/dpaf_image17.png" alt="Confirm"/></p>
 
-**2.3 Revisión** — valida base y tablas → **Next**.
 
-__Agent name__ --> Agente de análisis de datos de fútbol
-
-__Description__ --> Este agente analiza los datos históricos de partidos de la copa mundial
-
-<p align="center"><img src="./images/dpaf_image18.png" alt="Review 1"/></p>
-<p align="center"><img src="./images/dpaf_image20.png" alt="Review 2"/></p>
-
-**2.4 Publicación** — **Publish Agent**.
-
-<p align="center"><img src="./images/dpaf_image19.png" alt="Publish"/></p>
-
-#### Paso 3 · Usar el agente
-
-Abre el agente con **Open Agent**.
-
-<p align="center"><img width="900" src="./images/dpaf_image21.png" alt="Open agent"/></p>
-
-Pulsa **Execute Exploration**: el agente analiza automáticamente los datos y genera visualizaciones según los tipos detectados.
-
-<p align="center"><img width="900" src="./images/dpaf_image22.png" alt="Exploration"/></p>
-
-Ahora hazle preguntas en **lenguaje natural**:
-
-> 💬 *"¿Cuántos equipos participaron?"*
-> 💬 *"¿Cuál fue el estadio con más goles anotados?"*
-> 💬 *"Muestra la distribución de goles por fase del torneo"*
-
-Haz clic en el botón **SQL** para auditar la consulta generada por el agente.
 
 ---
 
-### 3.6 Lab · Agent Builder — Narrador futbolístico
+### 3.5 Lab · Agent Builder — Narrador futbolístico
 
 Construirás un flujo visual en **Agent Builder** en dos etapas:
 
@@ -1443,7 +1405,7 @@ Sección **DATA** → añade **SQL query**.
 
 | Campo | Valor |
 |---|---|
-| **Select database** | El `Data Source` creado en el paso 2.1 |
+| **Select database** | El `Data Source` creado en el anterior |
 | **Include columns** | ✅ |
 | **Query** | *conectado desde `LLM.Message`* |
 
@@ -1483,11 +1445,13 @@ Presiona **Save prompt** (crea automáticamente los nodos `{{...}}`) y conecta:
 |---|---|
 | `{{question}}` | `Chat input.Message` |
 | `{{sql}}` | `LLM.Message` |
-| `{{datos}}` | `SQL query.JSON` |
+| `{{datos}}` | `SQL Message` |
 
 ##### 2.7 · Bloque `Agent`
 
-Conecta `Prompt(narrador).Prompt message` → `Agent.Prompt`.
+Conecta `Prompt(narrador).Prompt message` → `Agent.Custom Instructions`.
+Conecta `Chat input.Message` → `Agent.Prompt`.
+
 
 ##### 2.8 · Bloque `Chat output`
 
