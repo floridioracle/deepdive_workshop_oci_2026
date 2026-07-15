@@ -143,6 +143,10 @@ Completa el formulario con estos valores:
 
 Haz clic en **Create Compartment** y espera a que el estado aparezca como **Active**.
 
+Luego abre el menú de acciones (**⋯**) del compartment `demo` y selecciona **Copy ocid**. Guarda este valor: lo usarás como `compartment_id` al configurar el stack.
+
+<p align="center"><img width="1000" src="./images/ocid_compartment.png" alt="Copiar el OCID del compartment demo desde OCI Console"/></p>
+
 - <details>
   <summary>🔽 Haz clic aquí: si tienes problemas para crear el compartment, revisa el paso a paso.</summary>
 
@@ -194,6 +198,8 @@ En OCI Console:
 5. Confirma el compartment `demo`.
 6. Continúa a la configuración de variables.
 
+<p align="center"><img width="1000" src="./images/primer_paso_stack.png" alt="Carga del ZIP y selección del compartment demo"/></p>
+
 #### Variables mínimas
 
 Configura estas variables en el formulario del stack:
@@ -205,6 +211,8 @@ region         = "us-chicago-1"
 
 wallet_password = "Wallet*2026Demo"
 ```
+
+<p align="center"><img width="1000" src="./images/variables_stack.png" alt="Configuración de variables del stack"/></p>
 
 Si el stack se crea directamente en Chicago, `region` puede quedar vacío o `null`, pero para evitar dudas en el workshop se recomienda cargar explícitamente:
 
@@ -234,15 +242,22 @@ La Autonomous queda fija en el código Terraform con estos parámetros:
 
 #### Ejecutar Plan y Apply
 
-Después de crear el stack:
 
-1. Revisa las variables.
-2. Ejecuta **Plan**.
+1. En **Review**, valida el compartment y las variables ingresadas. Deja desmarcada la opción **Run apply** y haz clic en **Create**.
+
+<p align="center"><img width="1000" src="./images/ejecutar_plan.png" alt="Revisión y creación del stack sin ejecutar Apply"/></p>
+
+2. En la página del stack recién creado, haz clic en **Plan**.
+
+<p align="center"><img width="1000" src="./images/ejecutar_plan2.png" alt="Stack creado en Resource Manager antes de ejecutar el Plan"/></p>
+
 3. Confirma que el plan inicial esperado sea:
 
    ```text
    Plan: 5 to add, 0 to change, 0 to destroy.
    ```
+
+<p align="center"><img width="1000" src="./images/run_plan_3.png" alt="Plan de Terraform completado correctamente"/></p>
 
 4. Revisa que el plan incluya:
    - Autonomous Database.
@@ -250,6 +265,9 @@ Después de crear el stack:
    - IAM policy.
    - Wallet.
 5. Ejecuta **Apply** una sola vez.
+
+<p align="center"><img width="1000" src="./images/run_apply.png" alt="Ejecución del Apply en Resource Manager"/></p>
+
 6. Espera a que el job termine en estado exitoso.
 
 #### Policy IAM creada por el stack
