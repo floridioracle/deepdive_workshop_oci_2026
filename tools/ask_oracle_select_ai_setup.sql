@@ -16,7 +16,7 @@ define ASK_ORACLE_USER = 'ORACLELABS'
 define OCI_GENAI_REGION = 'us-chicago-1'
 define OCI_GENAI_MODEL = 'xai.grok-4.3'
 define OCI_GENAI_EMBED_MODEL = 'cohere.embed-multilingual-light-v3.0'
-define OCI_COMPARTMENT_ID = 'ocid1.compartment.oc1..aaaaaaaaokqrjqnlqe7drotstyalyn55h2v72cftcjssj5wms5p5eiykgoya'
+define OCI_COMPARTMENT_ID = 'ocid1.compartment.oc1..REPLACE_ME'
 define CREDENTIAL_NAME = 'OCI$RESOURCE_PRINCIPAL'
 define ASK_ORACLE_NL2SQL_PROFILE = 'DEEPDIVE_WC_NL2SQL'
 define COMBINED_RAG_PROFILE = 'DEEPDIVE_WC_RAG'
@@ -26,8 +26,8 @@ define COMBINED_VECTOR_TABLE_NAME = 'DEEPDIVE_WC_COMBINED_VECTAB'
 -- Object Storage location used by the combined vector index.
 -- Upload the RAG source documents/text files under this prefix before running section C.
 define OBJECT_STORAGE_REGION = 'us-chicago-1'
-define OBJECT_STORAGE_NAMESPACE = 'axihdaegan7g'
-define SOURCE_BUCKET = 'demo_rag'
+define OBJECT_STORAGE_NAMESPACE = 'REPLACE_NAMESPACE'
+define SOURCE_BUCKET = 'REPLACE_BUCKET'
 define COMBINED_RAG_PREFIX = 'ask-oracle-rag/combined'
 
 define CHUNK_SIZE = 2048

@@ -96,11 +96,6 @@ Al finalizar, serás capaz de:
 - [2.5 Creación y asociación del cluster](#25-creación-y-asociación-del-cluster)
 
 ### 🤖 Módulo 3 · AI Database Private Agent Factory
-- [3.1 Creación de la red (VCN)](#31-creación-de-la-red-vcn)
-- [3.2 Despliegue desde OCI Marketplace](#32-despliegue-desde-oci-marketplace)
-- [3.3 Registro inicial y configuración de modelos](#33-registro-inicial-y-configuración-de-modelos)
-- [3.4 Navegación por la plataforma](#34-navegación-por-la-plataforma)
-- [3.5 Lab · Data Analysis Agent (Text‑to‑SQL)](#35-lab--data-analysis-agent-text-to-sql)
 - [3.6 Lab · Agent Builder — Narrador futbolístico](#36-lab--agent-builder--narrador-futbolístico)
 
 ### 💬 Módulo 4 · Ask Oracle Chatbot con Select AI y APEX
@@ -1554,20 +1549,28 @@ Cuando el workspace ya existe, la URL de APEX abre la pantalla de login del work
 | **Username** | `ASK_ORACLE_ADMIN` |
 | **Password** | *la contraseña definida al crear el workspace* |
 
-Antes de usar Ask Oracle, prepara los privilegios mínimos y el perfil Select AI con el script del workshop:
+Antes de usar Ask Oracle, revisa los permisos requeridos para el lab y prepara el perfil Select AI con el script del workshop.
 
 Antes de usar Select AI desde Autonomous, confirma que existen estas policies IAM a nivel compartment para el dynamic group `DeepDiveAdbResourcePrincipal`:
 
 ```text
-Allow dynamic-group DeepDiveAdbResourcePrincipal to read buckets in compartment id ocid1.compartment.oc1..aaaaaaaaokqrjqnlqe7drotstyalyn55h2v72cftcjssj5wms5p5eiykgoya
-Allow dynamic-group DeepDiveAdbResourcePrincipal to manage objects in compartment id ocid1.compartment.oc1..aaaaaaaaokqrjqnlqe7drotstyalyn55h2v72cftcjssj5wms5p5eiykgoya
-Allow dynamic-group DeepDiveAdbResourcePrincipal to read objectstorage-namespaces in compartment id ocid1.compartment.oc1..aaaaaaaaokqrjqnlqe7drotstyalyn55h2v72cftcjssj5wms5p5eiykgoya
-Allow dynamic-group DeepDiveAdbResourcePrincipal to use generative-ai-family in compartment id ocid1.compartment.oc1..aaaaaaaaokqrjqnlqe7drotstyalyn55h2v72cftcjssj5wms5p5eiykgoya
-Allow dynamic-group DeepDiveAdbResourcePrincipal to use ai-service-document-family in compartment id ocid1.compartment.oc1..aaaaaaaaokqrjqnlqe7drotstyalyn55h2v72cftcjssj5wms5p5eiykgoya
-Allow dynamic-group DeepDiveAdbResourcePrincipal to read secret-family in compartment id ocid1.compartment.oc1..aaaaaaaaokqrjqnlqe7drotstyalyn55h2v72cftcjssj5wms5p5eiykgoya
+Allow dynamic-group DeepDiveAdbResourcePrincipal to read buckets in compartment id <YOUR_COMPARTMENT_OCID>
+Allow dynamic-group DeepDiveAdbResourcePrincipal to manage objects in compartment id <YOUR_COMPARTMENT_OCID>
+Allow dynamic-group DeepDiveAdbResourcePrincipal to read objectstorage-namespaces in compartment id <YOUR_COMPARTMENT_OCID>
+Allow dynamic-group DeepDiveAdbResourcePrincipal to use generative-ai-family in compartment id <YOUR_COMPARTMENT_OCID>
+Allow dynamic-group DeepDiveAdbResourcePrincipal to use ai-service-document-family in compartment id <YOUR_COMPARTMENT_OCID>
+Allow dynamic-group DeepDiveAdbResourcePrincipal to read secret-family in compartment id <YOUR_COMPARTMENT_OCID>
 ```
 
+> ⚠️ Estos permisos están definidos para el alcance del laboratorio; incluyen acceso amplio a Object Storage. Sustituye `<YOUR_COMPARTMENT_OCID>` por el OCID de tu compartment y aplica el principio de mínimo privilegio antes de usarlo fuera del workshop.
+
 - [`tools/ask_oracle_select_ai_setup.sql`](./tools/ask_oracle_select_ai_setup.sql)
+
+Ejecución del script:
+
+1. En **Database Actions → SQL**, conéctate como `ADMIN` y ejecuta únicamente la sección **A**.
+2. Completa los valores `REPLACE_ME` y las variables de Object Storage según corresponda.
+3. Reconéctate como `ORACLELABS`, vuelve a cargar el script y ejecuta las secciones **B** a **E**.
 
 El script está dividido en secciones:
 
@@ -1588,8 +1591,11 @@ define OCI_GENAI_MODEL = 'cohere.command-r-08-2024'
 define OCI_GENAI_EMBED_MODEL = 'cohere.embed-multilingual-v3.0'
 ```
 
-Si también vas a probar RAG, sube los documentos o textos al bucket elegido y completa:
-crear el bucket demo rag y subir pdf deepdive_workshop_oci_2026-1\tools\FWC26_regulations_ES.pdf
+Si también vas a probar RAG:
+
+1. Crea o selecciona un bucket de Object Storage para el laboratorio.
+2. Sube [`tools/FWC26_regulations_ES.pdf`](./tools/FWC26_regulations_ES.pdf) con el prefijo `ask-oracle-rag/combined/`.
+3. Completa el namespace y el nombre del bucket en el script.
 
 ```sql
 define OBJECT_STORAGE_NAMESPACE = 'REPLACE_NAMESPACE'
@@ -1607,9 +1613,9 @@ FROM ORACLELABS.BRONZE_WC_MATCHES;
 
 ### 4.2 Importar la aplicación Ask Oracle
 
-Descarga la aplicación desde el repositorio oficial:
+Consulta la guía oficial de Ask Oracle para conocer las funcionalidades y novedades de la aplicación:
 
-- [Ask Oracle Chatbot APEX application](https://github.com/oracle-devrel/oracle-autonomous-database-samples/blob/main/apex/Ask-Oracle/README.md)
+- [Ask Oracle Chatbot con Select AI](https://blogs.oracle.com/machinelearning/try-the-new-ask-oracle-chatbot-powered-by-select-ai)
 
 Para este workshop también queda una copia local de la aplicación en:
 
