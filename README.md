@@ -96,7 +96,9 @@ Al finalizar, serás capaz de:
 - [2.5 Creación y asociación del cluster](#25-creación-y-asociación-del-cluster)
 
 ### 🤖 Módulo 3 · AI Database Private Agent Factory
-- [3.6 Lab · Agent Builder — Narrador futbolístico](#36-lab--agent-builder--narrador-futbolístico)
+- [3.3 Registro inicial y configuración de modelos](#33-registro-inicial-y-configuración-de-modelos)
+- [3.4 Navegación por la plataforma](#34-navegación-por-la-plataforma)
+- [3.5 Lab · Agent Builder — Narrador futbolístico](#35-lab--agent-builder--narrador-futbolístico)
 
 ### 💬 Módulo 4 · Ask Oracle Chatbot con Select AI y APEX
 - [4.1 Crear workspace APEX](#41-crear-workspace-apex)
@@ -851,130 +853,10 @@ Para ejecutar cada celda del notebook, haz clic en el botón **Play** o usa el a
 
 [![Oracle AI Database Private Agent Factory](https://img.shields.io/badge/DPAF%20-OCI-C74634?style=for-the-badge)](https://docs.oracle.com/en/database/oracle/agent-factory/index.html)
 
-*Aprovisionamos desde Marketplace una factoría privada de agentes sobre Oracle Database 26ai, la integramos con nuestra Autonomous y construimos agentes Text‑to‑SQL y flujos conversacionales.*
+*Configuramos la factoría privada de agentes ya desplegada sobre Oracle Database 26ai, la integramos con nuestra Autonomous y construimos agentes Text‑to‑SQL y flujos conversacionales.*
 
 </div>
 
----
-
-### 3.1 Creación de la red (VCN)
-
-Navega a **Networking → Virtual Cloud Networks** y confirma el compartment.
-
-<p align="center"><img src="./images/image 8.png" alt="VCN menu"/></p>
-
-Crea una VCN **con acceso a internet**:
-
-<p align="center"><img src="./images/image 9.png" alt="VCN wizard"/></p>
-
-| Campo | Valor |
-|---|---|
-| **Name** | `vcn-agent` |
-
-El resto de valores por defecto → **Next → Create**.
-
-#### 🔐 Configuración de puertos
-
-Una vez creada la VCN, en el panel **Security** abre **Security Lists** y selecciona la lista por defecto (`Default Security List for …`).
-
-<p align="center"><img width="800" src="./images/image 10.png" alt="Security Lists"/></p>
-<p align="center"><img src="./images/image 11.png" alt="Default SL"/></p>
-
-En **Security Rules → Add Ingress Rules** añade:
-
-<p align="center"><img src="./images/image 12.png" alt="Rules"/></p>
-<p align="center"><img src="./images/image 13.png" alt="Add rule"/></p>
-<p align="center"><img width="800" src="./images/image 14.png" alt="Rule detail"/></p>
-
-| Source CIDR | Destination Port Range | Propósito |
-|---|---|---|
-| `0.0.0.0/0` | `8080` | Interfaz web de DPAF |
-| `0.0.0.0/0` | `1521` | Conexión a Oracle Database |
-
-<p align="center"><img width="800" src="./images/image 15.png" alt="Rule 8080"/></p>
-<p align="center"><img src="./images/image 16.png" alt="Rule 1521"/></p>
-
-Confirma con **Add Ingress Rules**.
-
----
-
-### 3.2 Despliegue desde OCI Marketplace
-
-🔗 [Oracle AI Database Private Agent Factory · Marketplace Listing](https://marketplace.oracle.com/listings/oracle-ai-database-private-agent-factory/ocid1.mktpublisting.oc1.iad.amaaaaaaknuwtjiawz3nex7vjo2usqfv3jr5v6scz5uzvg7mef6ykxuc5zaa)
-
-Navega a **Marketplace → All Applications** y busca la aplicación:
-
-<p align="center"><img width="900" src="./images/image 17.png" alt="Marketplace"/></p>
-
-```
-Oracle AI Database Private Agent Factory
-```
-
-<p align="center"><img src="./images/image 18.png" alt="Buscar app"/></p>
-<p align="center"><img src="./images/image 19.png" alt="Seleccionar"/></p>
-
-Selecciona la app → **Launch Stack**. Confirma el compartment.
-
-<p align="center"><img src="./images/image 20.png" alt="Create stack"/></p>
-
-#### 1️⃣ Stack information
-
-Nombre y descripción del stack (puedes dejar la descripción por defecto).
-
-#### 2️⃣ Configure variables
-
-**General settings**
-```yaml
-Region:             <tu región actual de OCI>
-VM compartment:     <tu compartment>
-Subnet compartment: <tu compartment>
-```
-
-> 🔎 **Importante:** no dejes `us-chicago-1` por defecto a menos que realmente estés desplegando en Chicago. Para evitar problemas de conectividad y compatibilidad, mantén en la **misma región** el stack, la VM de Agent Factory, Autonomous Database, AIDP y OCI Generative AI. En este workshop hemos validado especialmente estas regiones:
->
-> - **Chicago** → `us-chicago-1`
-> - **São Paulo** → `sa-saopaulo-1`
-> - **London** → `uk-london-1`
-> - **Frankfurt** → `eu-frankfurt-1`
-
-**Network Configuration**
-```yaml
-VCN:                    vcn-agent
-Existing subnet:        <subred pública>
-Public or Private:      public
-```
-
-**Agent Factory VM**
-```yaml
-Agent Factory server display name: AgentFactoryVM
-Agent Factory server shape:        VM.Standard.E5.Flex
-```
-
-<p align="center"><img width="800" src="./images/shape_vm_agent_factory.jpg" alt="Shape"/></p>
-
-**Public SSH key**
-
-Se requiere una llave pública SSH.
-
-Si no deseas generarla durante el workshop, puedes usar esta clave temporal incluida en el repositorio:
-
-- <a href="./tools/oraclelabs.pub" download="oraclelabs.pub">Descargar `oraclelabs.pub`</a>
-
-> ⚠️ Esta clave se incluye únicamente para fines de laboratorio. No se recomienda reutilizarla en entornos productivos ni en recursos que deban permanecer activos después del workshop.
-
-Si prefieres crear tu propia llave, puedes generarla con PowerShell:
-> ```powershell
-> ssh-keygen -t rsa -b 4096 -f .\oraclelabs
-> ```
-> Luego carga la llave **pública** (`.pub`). Windows puede confundir la extensión con Microsoft Publisher.
-
-<p align="center"><img src="./images/image 39.png" alt="SSH key"/></p>
-
-#### 3️⃣ Review
-
-Revisa la configuración y lanza el stack. El proceso toma **3–4 minutos**. Cuando finaliza, el último log muestra un **link de acceso** a DPAF.
-
-<p align="center"><img src="./images/instalacion_AF.jpg" alt="Instalación DPAF"/></p>
 ---
 
 ### 3.3 Registro inicial y configuración de modelos
