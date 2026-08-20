@@ -111,7 +111,7 @@ Al finalizar, serás capaz de:
 
 ---
 
-<details>
+<details open>
 <summary><strong>🧱 Módulo 1 · Preparación del entorno</strong></summary>
 
 <div align="center">
@@ -144,7 +144,7 @@ Luego abre el menú de acciones (**⋯**) del compartment `demo` y selecciona **
 
 <p align="center"><img width="1000" src="./images/ocid_compartment.png" alt="Copiar el OCID del compartment demo desde OCI Console"/></p>
 
-- <details>
+- <details open>
   <summary>🔽 Haz clic aquí: si tienes problemas para crear el compartment, revisa el paso a paso.</summary>
 
   1. Ve a **Identity & Security → Compartments**.
@@ -408,7 +408,7 @@ Guarda el archivo `.zip` en una ubicación segura. Esta Wallet se usará en paso
 
 </details>
 
-<details>
+<details open>
 <summary><strong>📥 Módulo 2 · Ingesta y catalogación de datos</strong></summary>
 
 <div align="center">
@@ -844,7 +844,7 @@ Para ejecutar cada celda del notebook, haz clic en el botón **Play** o usa el a
 
 </details>
 
-<details>
+<details open>
 <summary><strong>🤖 Módulo 3 · AI Database Private Agent Factory</strong></summary>
 
 <div align="center">
